@@ -42,104 +42,159 @@ const uint8_t motor_7_B = 13;
 const uint8_t motor_8_A = 14;
 const uint8_t motor_8_B = 15;
 
+const bool LEFT_TRACK_FORWARD = 1;
+const bool LEFT_TRACK_BACKWARD = 0;
+const bool RIGHT_TRACK_FORWARD = 0;
+const bool RIGHT_TRACK_BACKWARD = 1;
+
+int right_joystick_Y = 0;
+int left_joystick_Y = 0;
+int right_drive_speed = 0;
+int left_drive_speed = 0;
+int boom_speed = 0;
+int bucket_speed = 0;
+int dipper_speed = 0;
+int swing_speed = 0;
+
+bool a = false;
+bool b = false;
+bool x = false;
+bool y = false;
+
+bool l1 = false;
+bool r1 = false;
+
 // This callback gets called any time a new gamepad is connected.
 // Up to 4 gamepads can be connected at the same time.
 void onConnectedController(ControllerPtr ctl) {
-    bool foundEmptySlot = false;
-    for (int i = 0; i < BP32_MAX_GAMEPADS; i++) {
-        if (myControllers[i] == nullptr) {
-            Serial.printf("CALLBACK: Controller is connected, index=%d\n", i);
-            // Additionally, you can get certain gamepad properties like:
-            // Model, VID, PID, BTAddr, flags, etc.
-            ControllerProperties properties = ctl->getProperties();
-            Serial.printf("Controller model: %s, VID=0x%04x, PID=0x%04x\n", ctl->getModelName().c_str(), properties.vendor_id,
-                           properties.product_id);
-            myControllers[i] = ctl;
-            foundEmptySlot = true;
-            break;
-        }
+  bool foundEmptySlot = false;
+  for (int i = 0; i < BP32_MAX_GAMEPADS; i++) {
+    if (myControllers[i] == nullptr) {
+      Serial.printf("CALLBACK: Controller is connected, index=%d\n", i);
+      // Additionally, you can get certain gamepad properties like:
+      // Model, VID, PID, BTAddr, flags, etc.
+      ControllerProperties properties = ctl->getProperties();
+      Serial.printf("Controller model: %s, VID=0x%04x, PID=0x%04x\n", ctl->getModelName().c_str(), properties.vendor_id,
+                      properties.product_id);
+      myControllers[i] = ctl;
+      foundEmptySlot = true;
+      break;
     }
-    if (!foundEmptySlot) {
-        Serial.println("CALLBACK: Controller connected, but could not found empty slot");
-    }
+  }
+  if (!foundEmptySlot) {
+    Serial.println("CALLBACK: Controller connected, but could not found empty slot");
+  }
 }
 
 void onDisconnectedController(ControllerPtr ctl) {
-    bool foundController = false;
+  bool foundController = false;
 
-    for (int i = 0; i < BP32_MAX_GAMEPADS; i++) {
-        if (myControllers[i] == ctl) {
-            Serial.printf("CALLBACK: Controller disconnected from index=%d\n", i);
-            myControllers[i] = nullptr;
-            foundController = true;
-            break;
-        }
+  for (int i = 0; i < BP32_MAX_GAMEPADS; i++) {
+    if (myControllers[i] == ctl) {
+      Serial.printf("CALLBACK: Controller disconnected from index=%d\n", i);
+      myControllers[i] = nullptr;
+      foundController = true;
+      break;
     }
+  }
 
-    if (!foundController) {
-        Serial.println("CALLBACK: Controller disconnected, but not found in myControllers");
-    }
+  if (!foundController) {
+    Serial.println("CALLBACK: Controller disconnected, but not found in myControllers");
+  }
 }
 
 void dumpGamepad(ControllerPtr ctl) {
-    Serial.printf(
-        "idx=%d, dpad: 0x%02x, buttons: 0x%04x, axis L: %4d, %4d, axis R: %4d, %4d, brake: %4d, throttle: %4d, "
-        "misc: 0x%02x, l1:%1x, r1:%1x, b:%1x\n",
-        ctl->index(),        // Controller Index
-        ctl->dpad(),         // D-pad
-        ctl->buttons(),      // bitmask of pressed buttons
-        ctl->axisX(),        // (-511 - 512) left X Axis
-        ctl->axisY(),        // (-511 - 512) left Y axis
-        ctl->axisRX(),       // (-511 - 512) right X axis
-        ctl->axisRY(),       // (-511 - 512) right Y axis
-        ctl->brake(),        // (0 - 1023): brake button
-        ctl->throttle(),     // (0 - 1023): throttle (AKA gas) button
-        ctl->miscButtons(),  // bitmask of pressed "misc" buttons
-        //
-        ctl->l1(),
-        ctl->r1(),
-        ctl->b()
-    );
+  Serial.printf(
+    "idx=%d, dpad: 0x%02x, buttons: 0x%04x, axis L: %4d, %4d, axis R: %4d, %4d, brake: %4d, throttle: %4d, "
+    "misc: 0x%02x, l1:%1x, r1:%1x, b:%1x\n",
+    ctl->index(),        // Controller Index
+    ctl->dpad(),         // D-pad
+    ctl->buttons(),      // bitmask of pressed buttons
+    ctl->axisX(),        // (-511 - 512) left X Axis
+    ctl->axisY(),        // (-511 - 512) left Y axis
+    ctl->axisRX(),       // (-511 - 512) right X axis
+    ctl->axisRY(),       // (-511 - 512) right Y axis
+    ctl->brake(),        // (0 - 1023): brake button
+    ctl->throttle(),     // (0 - 1023): throttle (AKA gas) button
+    ctl->miscButtons(),  // bitmask of pressed "misc" buttons
+    //
+    ctl->l1(),
+    ctl->r1(),
+    ctl->b()
+  );
 }
 
 void processGamepad(ControllerPtr ctl) {
-    if (ctl->x()) {
-        // Some controllers have two motors: "strong motor", "weak motor".
-        // It is possible to control them independently.
-        ctl->playDualRumble(0 /* delayedStartMs */, 250 /* durationMs */, 0x80 /* weakMagnitude */,
-                            0x40 /* strongMagnitude */);
-    }
+  right_joystick_Y = ctl->axisRY();
+  left_joystick_Y = ctl->axisY();
+  r1 = ctl->r1();
 
-    if (ctl->l1()) {
-      Serial.println("L1");
-    }
+  // jesli r1 wcisniety to analogi steruja gasienicami
+  // jesli r1 nie wcisniety to analogi steruja ramieniem i obrotem koparki wg standardu ISO
+  if (r1) {
+    right_drive_speed = right_joystick_Y;
+    left_drive_speed = left_joystick_Y;
+    bucket_speed = 0;
+    swing_speed = 0;
+  }
+  else {
+    boom_speed = right_joystick_Y;
+    dipper_speed = left_joystick_Y;
+    bucket_speed = ctl->axisRY();
+    swing_speed = ctl->axisY();
+  }
 
-    if (ctl->l2()) {
-      Serial.println("L2");
-    }
+  
 
-    if (ctl->r1()) {
-      Serial.println("R1");
-    }
+  if (right_drive_speed >= 20) {
+    Serial.println("Driving right track forward");
+    drive_actuator(RIGHT_DRIVE, RIGHT_TRACK_FORWARD, right_drive_speed);
+  }
+  else if (right_drive_speed <= -20) {
+    Serial.println("Driving left track backward");
+    drive_actuator(RIGHT_DRIVE, RIGHT_TRACK_BACKWARD, right_drive_speed);
+  }
 
-    if (ctl->r2()) {
-      Serial.println("R2");
-    }
-    // Another way to query controller data is by getting the buttons() function.
-    // See how the different "dump*" functions dump the Controller info.
-    dumpGamepad(ctl);
+  if (left_drive_speed >= 20) {
+    Serial.println("Driving left track forward");
+    drive_actuator(LEFT_DRIVE, LEFT_TRACK_FORWARD, left_drive_speed);
+  }
+  else if (left_drive_speed <= 20) {
+    Serial.println("Driving left track forward");
+    drive_actuator(LEFT_DRIVE, LEFT_TRACK_BACKWARD, left_drive_speed);
+  }
+
+
+  if (ctl->l1()) {
+    Serial.println("L1");
+  }
+
+  if (ctl->l2()) {
+    Serial.println("L2");
+  }
+
+  if (ctl->r1()) {
+    Serial.println("R1");
+  }
+
+  if (ctl->r2()) {
+    Serial.println("R2");
+  }
+  // Another way to query controller data is by getting the buttons() function.
+  // See how the different "dump*" functions dump the Controller info.
+  dumpGamepad(ctl);
 }
 
 void processControllers() {
-    for (auto myController : myControllers) {
-        if (myController && myController->isConnected() && myController->hasData()) {
-            if (myController->isGamepad()) {
-                processGamepad(myController);
-            } else {
-                Serial.println("Unsupported controller");
-            }
-        }
+  for (auto myController : myControllers) {
+    if (myController && myController->isConnected() && myController->hasData()) {
+      if (myController->isGamepad()) {
+        processGamepad(myController);
+      } else {
+        Serial.println("Unsupported controller");
+      }
     }
+  }
 }
 
 void drive_motor(uint8_t pinA, uint8_t pinB, uint8_t direction, uint16_t speed) {
@@ -225,7 +280,7 @@ void loop() {
   // Call this function in your main loop.
   bool dataUpdated = BP32.update();
   if (dataUpdated)
-      processControllers();
+    processControllers();
 
   // The main loop must have some kind of "yield to lower priority task" event.
   // Otherwise, the watchdog will get triggered.
