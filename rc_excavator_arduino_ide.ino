@@ -222,30 +222,34 @@ void drive_motor(uint8_t pinA, uint8_t pinB, int8_t direction, int16_t speed) {
   Serial.println(speed);
   if (speed < 0)
   {
-    speed = speed * -1;
+    speed = speed * -4;
     Serial.print("Speed after conversion: ");
     Serial.println(speed);
-  } else if (speed == 0) {
-    pwm.setPWM(pinA, 0, 4096);
+  }
+  else {
+    speed = speed * 4;
+    Serial.print("Speed after conversion: ");
+    Serial.println(speed);
   }
 
-  speed = speed * 4;
-  Serial.print("Speed * 4:");
-  Serial.println(speed);
+  // multiplying *4 because pwm is up to 4096 (12bit) and joystick is up to 512
+  // speed = speed * 4;
+  // Serial.print("Speed * 4:");
+  // Serial.println(speed);
 
   if (direction == 1) {
-    Serial.println("Direction 0");
+    Serial.println("Direction 1");
     // Serial.println("PinA set");
     pwm.setPWM(pinA, 0, 4096);
     pwm.setPWM(pinB, 0, speed);
   }
   else if (direction == -1) {
-    Serial.println("Direction 1");
+    Serial.println("Direction -1");
     pwm.setPWM(pinB, 0, 4096);
     pwm.setPWM(pinA, 0, speed);
   }
   else {
-    Serial.println("Direction Stop");
+    Serial.println("Direction 0");
     pwm.setPWM(pinA, 4096, 0);
     pwm.setPWM(pinB, 4096, 0);
   }
