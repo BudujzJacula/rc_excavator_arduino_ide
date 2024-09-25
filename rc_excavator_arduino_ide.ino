@@ -42,9 +42,12 @@ const uint8_t motor_7_B = 13;
 const uint8_t motor_8_A = 14;
 const uint8_t motor_8_B = 15;
 
-const bool LEFT_TRACK_FORWARD = 1;
-const bool LEFT_TRACK_BACKWARD = 0;
-const bool RIGHT_TRACK_FORWARD = 0;
+const bool LEFT_TRACK_FORWARD  = 1;
+const bool LEFT_TRACK_STOP     = 0;
+const int LEFT_TRACK_BACKWARD  = -1;
+
+const int RIGHT_TRACK_FORWARD = -1;
+const bool RIGHT_TRACK_STOP     = 0;
 const bool RIGHT_TRACK_BACKWARD = 1;
 
 int right_joystick_Y = 0;
@@ -129,56 +132,72 @@ void processGamepad(ControllerPtr ctl) {
   left_joystick_Y = ctl->axisY();
   r1 = ctl->r1();
 
-  // jesli r1 wcisniety to analogi steruja gasienicami
-  // jesli r1 nie wcisniety to analogi steruja ramieniem i obrotem koparki wg standardu ISO
+  // // jesli r1 wcisniety to analogi steruja gasienicami
+  // // jesli r1 nie wcisniety to analogi steruja ramieniem i obrotem koparki wg standardu ISO
   if (r1) {
+    // Serial.println("Driving tracks");
     right_drive_speed = right_joystick_Y;
     left_drive_speed = left_joystick_Y;
+
+    boom_speed = 0;
+    dipper_speed = 0;
     bucket_speed = 0;
     swing_speed = 0;
   }
   else {
+    // Serial.println("Arm control");
+    right_drive_speed = 0;
+    left_drive_speed = 0;
+
     boom_speed = right_joystick_Y;
     dipper_speed = left_joystick_Y;
     bucket_speed = ctl->axisRY();
     swing_speed = ctl->axisY();
   }
 
-  
 
-  if (right_drive_speed >= 20) {
+
+  if (right_drive_speed <= -40) {
     Serial.println("Driving right track forward");
     drive_actuator(RIGHT_DRIVE, RIGHT_TRACK_FORWARD, right_drive_speed);
   }
-  else if (right_drive_speed <= -20) {
-    Serial.println("Driving left track backward");
+  else if (right_drive_speed >= 40) {
+    Serial.println("Driving right track backward");
     drive_actuator(RIGHT_DRIVE, RIGHT_TRACK_BACKWARD, right_drive_speed);
   }
+  else {
+    Serial.println("Stopping right track");
+    drive_actuator(RIGHT_DRIVE, RIGHT_TRACK_STOP, 0);
+  }
 
-  if (left_drive_speed >= 20) {
+  if (left_drive_speed <= -40) {
     Serial.println("Driving left track forward");
     drive_actuator(LEFT_DRIVE, LEFT_TRACK_FORWARD, left_drive_speed);
   }
-  else if (left_drive_speed <= 20) {
-    Serial.println("Driving left track forward");
+  else if (left_drive_speed >= 40) {
+    Serial.println("Driving left track backward");
     drive_actuator(LEFT_DRIVE, LEFT_TRACK_BACKWARD, left_drive_speed);
+  }
+  else {
+    Serial.println("Stopping left track");
+    drive_actuator(LEFT_DRIVE, LEFT_TRACK_STOP, 0);
   }
 
 
   if (ctl->l1()) {
-    Serial.println("L1");
+    // Serial.println("L1");
   }
 
   if (ctl->l2()) {
-    Serial.println("L2");
+    // Serial.println("L2");
   }
 
   if (ctl->r1()) {
-    Serial.println("R1");
+    // Serial.println("R1");
   }
 
   if (ctl->r2()) {
-    Serial.println("R2");
+    // Serial.println("R2");
   }
   // Another way to query controller data is by getting the buttons() function.
   // See how the different "dump*" functions dump the Controller info.
@@ -197,26 +216,55 @@ void processControllers() {
   }
 }
 
-void drive_motor(uint8_t pinA, uint8_t pinB, uint8_t direction, uint16_t speed) {
-  if (direction == 0) {
-    pwm.setPWM(pinA, speed, 0);
+void drive_motor(uint8_t pinA, uint8_t pinB, int8_t direction, int16_t speed) {
+  Serial.println("Drive motor");
+  // Serial.print("Speed before conversion: ");
+  Serial.println(speed);
+  if (speed < 0)
+  {
+    speed = speed * -1;
+    Serial.print("Speed after conversion: ");
+    Serial.println(speed);
+  } else if (speed == 0) {
+    pwm.setPWM(pinA, 0, 4096);
+  }
+
+  speed = speed * 4;
+  Serial.print("Speed * 4:");
+  Serial.println(speed);
+
+  if (direction == 1) {
+    Serial.println("Direction 0");
+    // Serial.println("PinA set");
+    pwm.setPWM(pinA, 0, 4096);
+    pwm.setPWM(pinB, 0, speed);
+  }
+  else if (direction == -1) {
+    Serial.println("Direction 1");
     pwm.setPWM(pinB, 0, 4096);
+    pwm.setPWM(pinA, 0, speed);
   }
   else {
-    pwm.setPWM(pinA, 0, 4096);
-    pwm.setPWM(pinB, speed, 0);
+    Serial.println("Direction Stop");
+    pwm.setPWM(pinA, 4096, 0);
+    pwm.setPWM(pinB, 4096, 0);
   }
+
+  // pwm.setPWM(pin, 4096, 0);       // turns pin fully on
+  // pwm.setPWM(pin, 0, 4096);       // turns pin fully off
 }
 
 void drive_actuator(Actuators motor, uint8_t direction, uint16_t speed) {
+  // Serial.println("Drive actuator");
   switch (motor)
   {
   case LEFT_DRIVE:
+    // Serial.println("LEFT_DRIVE");
     drive_motor(motor_1_A, motor_1_B, direction, speed);
-    Serial.println("LEFT_DRIVE");
 
     break;
   case RIGHT_DRIVE:
+    // Serial.println("RIGHT_DRIVE");
     drive_motor(motor_2_A, motor_2_B, direction, speed);
 
     break;
@@ -253,6 +301,8 @@ void drive_actuator(Actuators motor, uint8_t direction, uint16_t speed) {
 // Arduino setup function. Runs in CPU 1
 void setup() {
   Serial.begin(115200);
+  pwm.begin();
+  pwm.setPWMFreq(1000);
   Serial.printf("Firmware: %s\n", BP32.firmwareVersion());
   const uint8_t* addr = BP32.localBdAddress();
   Serial.printf("BD Addr: %2X:%2X:%2X:%2X:%2X:%2X\n", addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
@@ -291,6 +341,7 @@ void loop() {
   //     vTaskDelay(1);
   delay(150);
 
+  // Serial.println("Driving actuators in loop()");
   // drive_actuator(LEFT_DRIVE, 0, 2048);
   // drive_actuator(RIGHT_DRIVE, 0, 2048);
   // drive_actuator(SWING_MOTOR, 0, 2048);
