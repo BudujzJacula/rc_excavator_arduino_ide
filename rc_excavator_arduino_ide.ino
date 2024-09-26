@@ -222,12 +222,12 @@ void drive_motor(uint8_t pinA, uint8_t pinB, int8_t direction, int16_t speed) {
   Serial.println(speed);
   if (speed < 0)
   {
-    speed = speed * -4;
+    speed = speed * -8;
     Serial.print("Speed after conversion: ");
     Serial.println(speed);
   }
   else {
-    speed = speed * 4;
+    speed = speed * 8;
     Serial.print("Speed after conversion: ");
     Serial.println(speed);
   }
@@ -343,7 +343,7 @@ void loop() {
   // https://stackoverflow.com/questions/66278271/task-watchdog-got-triggered-the-tasks-did-not-reset-the-watchdog-in-time
 
   //     vTaskDelay(1);
-  delay(150);
+  delay(5);
 
   // Serial.println("Driving actuators in loop()");
   // drive_actuator(LEFT_DRIVE, 0, 2048);
