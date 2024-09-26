@@ -42,6 +42,7 @@ const uint8_t motor_7_B = 13;
 const uint8_t motor_8_A = 14;
 const uint8_t motor_8_B = 15;
 
+// REFACTOR zamiast ARM_OUT=1 i BUCKET_OUT=1 zrobic jedno OUT=1, tak samo z forward i backward
 const bool LEFT_TRACK_FORWARD  = 1;
 const bool LEFT_TRACK_STOP     = 0;
 const int LEFT_TRACK_BACKWARD  = -1;
@@ -50,14 +51,38 @@ const int RIGHT_TRACK_FORWARD = -1;
 const bool RIGHT_TRACK_STOP     = 0;
 const bool RIGHT_TRACK_BACKWARD = 1;
 
+const bool SWING_RIGHT = 1;
+const bool SWING_STOP = 0;
+const int SWING_LEFT = -1;
+
+const bool ARM_OUT = 1;
+const bool ARM_STOP = 0;
+const int ARM_IN = -1;
+
+const bool DIPPER_OUT = 1;
+const bool DIPPER_STOP = 0;
+const int DIPPER_IN = -1;
+
+const bool BUCKET_OUT = 1;
+const bool BUCKET_STOP = 0;
+const int BUCKET_IN = -1;
+
+const bool THUMB_OUT = 1;
+const bool THUMB_STOP = 0;
+const int THUMB_IN = -1;
+
 int right_joystick_Y = 0;
 int left_joystick_Y = 0;
 int right_drive_speed = 0;
 int left_drive_speed = 0;
-int boom_speed = 0;
+
+int arm_speed = 0;
 int bucket_speed = 0;
 int dipper_speed = 0;
 int swing_speed = 0;
+
+int thumb_in_speed = 0;
+int thumb_out_speed = 0;
 
 bool a = false;
 bool b = false;
@@ -66,6 +91,8 @@ bool y = false;
 
 bool l1 = false;
 bool r1 = false;
+int l2 = 0;
+int r2 = 0;
 
 // This callback gets called any time a new gamepad is connected.
 // Up to 4 gamepads can be connected at the same time.
@@ -117,8 +144,8 @@ void dumpGamepad(ControllerPtr ctl) {
     ctl->axisY(),        // (-511 - 512) left Y axis
     ctl->axisRX(),       // (-511 - 512) right X axis
     ctl->axisRY(),       // (-511 - 512) right Y axis
-    ctl->brake(),        // (0 - 1023): brake button
-    ctl->throttle(),     // (0 - 1023): throttle (AKA gas) button
+    ctl->l2(),           // (0 - 1023): brake button
+    ctl->r2(),           // (0 - 1023): throttle (AKA gas) button
     ctl->miscButtons(),  // bitmask of pressed "misc" buttons
     //
     ctl->l1(),
@@ -132,6 +159,9 @@ void processGamepad(ControllerPtr ctl) {
   left_joystick_Y = ctl->axisY();
   r1 = ctl->r1();
 
+  thumb_in_speed = ctl->r2();
+  thumb_out_speed = ctl->l2();
+
   // // jesli r1 wcisniety to analogi steruja gasienicami
   // // jesli r1 nie wcisniety to analogi steruja ramieniem i obrotem koparki wg standardu ISO
   if (r1) {
@@ -139,7 +169,7 @@ void processGamepad(ControllerPtr ctl) {
     right_drive_speed = right_joystick_Y;
     left_drive_speed = left_joystick_Y;
 
-    boom_speed = 0;
+    arm_speed = 0;
     dipper_speed = 0;
     bucket_speed = 0;
     swing_speed = 0;
@@ -149,13 +179,11 @@ void processGamepad(ControllerPtr ctl) {
     right_drive_speed = 0;
     left_drive_speed = 0;
 
-    boom_speed = right_joystick_Y;
+    arm_speed = right_joystick_Y;
     dipper_speed = left_joystick_Y;
     bucket_speed = ctl->axisRY();
     swing_speed = ctl->axisY();
   }
-
-
 
   if (right_drive_speed <= -40) {
     Serial.println("Driving right track forward");
@@ -182,6 +210,80 @@ void processGamepad(ControllerPtr ctl) {
     Serial.println("Stopping left track");
     drive_actuator(LEFT_DRIVE, LEFT_TRACK_STOP, 0);
   }
+
+  // swing
+  if (swing_speed > 10) {
+    Serial.println("Swing right");
+    drive_actuator(SWING_MOTOR, SWING_RIGHT, swing_speed);
+  }
+  else if (swing_speed < -10) {
+    Serial.println("Swing left");
+    drive_actuator(SWING_MOTOR, SWING_LEFT, swing_speed);
+  }
+  else {
+    Serial.println("Swing stop");
+    drive_actuator(SWING_MOTOR, SWING_STOP, 0);
+  }
+
+  // arm
+  if (arm_speed > 10) {
+    Serial.println("Arm in");
+    drive_actuator(ARM, ARM_IN, arm_speed);
+  }
+  else if (arm_speed < -10) {
+    Serial.println("Arm out");
+    drive_actuator(ARM, ARM_OUT, arm_speed);
+  }
+  else {
+    Serial.println("Arm stop");
+    drive_actuator(ARM, ARM_STOP, 0);
+  }
+
+  // dipper
+  if (dipper_speed > 10) {
+    Serial.println("Dipper in");
+    drive_actuator(DIPPER, DIPPER_IN, dipper_speed);
+  }
+  else if (dipper_speed < -10) {
+    Serial.println("Dipper out");
+    drive_actuator(DIPPER, DIPPER_OUT, dipper_speed);
+  }
+  else {
+    Serial.println("Dipper stop");
+    drive_actuator(DIPPER, DIPPER_STOP, 0);
+  }
+
+  // bucket
+  if (bucket_speed > thumb_out_speed) {
+    Serial.println("Bucket in");
+    drive_actuator(BUCKET, BUCKET_IN, bucket_speed);
+  }
+  else if (bucket_speed < thumb_out_speed) {
+    Serial.println("Bucket out");
+    drive_actuator(BUCKET, BUCKET_OUT, bucket_speed);
+  }
+  else {
+    Serial.println("Bucket stop");
+    drive_actuator(BUCKET, BUCKET_STOP, 0);
+  }
+
+  // thumb
+  if (thumb_in_speed > thumb_out_speed) {
+    Serial.println("Thumb in");
+    drive_actuator(THUMB, THUMB_IN, thumb_in_speed);
+  }
+  else if (thumb_in_speed < thumb_out_speed) {
+    Serial.println("Thumb out");
+    drive_actuator(THUMB, THUMB_OUT, thumb_out_speed);
+  }
+  else {
+    Serial.println("Thumb stop");
+    drive_actuator(THUMB, THUMB_STOP, 0);
+  }
+
+
+
+
 
 
   if (ctl->l1()) {
@@ -258,7 +360,7 @@ void drive_motor(uint8_t pinA, uint8_t pinB, int8_t direction, int16_t speed) {
   // pwm.setPWM(pin, 0, 4096);       // turns pin fully off
 }
 
-void drive_actuator(Actuators motor, uint8_t direction, uint16_t speed) {
+void drive_actuator(Actuators motor, int8_t direction, uint16_t speed) {
   // Serial.println("Drive actuator");
   switch (motor)
   {
