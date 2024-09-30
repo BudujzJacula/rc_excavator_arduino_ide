@@ -451,6 +451,12 @@ void drive_actuator(Actuators motor, int8_t direction, uint16_t speed) {
   }
 }
 
+/*
+do poprawy:
+- poprawienie martwej strefy w napedzie obrotu,
+- zdebuggowanie zatrzymania silnika przy pelnym wychyleniu drazka
+*/
+
 // Arduino setup function. Runs in CPU 1
 void setup() {
   Serial.begin(115200);
