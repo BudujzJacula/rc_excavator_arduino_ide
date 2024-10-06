@@ -198,133 +198,113 @@ void processGamepad(ControllerPtr ctl) {
 
   // right drive
   if (right_drive_speed <= -40) {
-    Serial.println("Driving right track forward");
+    // Serial.println("Driving right track forward");
     drive_actuator(RIGHT_DRIVE, RIGHT_TRACK_FORWARD, right_drive_speed);
   }
   else if (right_drive_speed >= 40) {
     // Serial.println("Driving right track backward");
     drive_actuator(RIGHT_DRIVE, RIGHT_TRACK_BACKWARD, right_drive_speed);
   }
-  else {
-    // Serial.println("Stopping right track");
-    drive_actuator(RIGHT_DRIVE, RIGHT_TRACK_STOP, 0);
-  }
+  // else {
+  //   // Serial.println("Stopping right track");
+  //   drive_actuator(RIGHT_DRIVE, RIGHT_TRACK_STOP, 0);
+  // }
 
   // left drive
   if (left_drive_speed <= -40) {
-    Serial.println("Driving left track forward");
+    // Serial.println("Driving left track forward");
     drive_actuator(LEFT_DRIVE, LEFT_TRACK_FORWARD, left_drive_speed);
   }
   else if (left_drive_speed >= 40) {
     // Serial.println("Driving left track backward");
     drive_actuator(LEFT_DRIVE, LEFT_TRACK_BACKWARD, left_drive_speed);
   }
-  else {
-    // Serial.println("Stopping left track");
-    drive_actuator(LEFT_DRIVE, LEFT_TRACK_STOP, 0);
-  }
+  // else {
+  //   // Serial.println("Stopping left track");
+  //   drive_actuator(LEFT_DRIVE, LEFT_TRACK_STOP, 0);
+  // }
 
   // swing
   if (swing_speed > 50) {
-    Serial.println("Swing right");
+    // Serial.println("Swing right");
     drive_actuator(SWING_MOTOR, SWING_RIGHT, swing_speed);
   }
   else if (swing_speed < -50) {
     // Serial.println("Swing left");
     drive_actuator(SWING_MOTOR, SWING_LEFT, swing_speed);
   }
-  else {
-    // Serial.println("Swing stop");
-    drive_actuator(SWING_MOTOR, SWING_STOP, 0);
-  }
+  // else {
+  //   // Serial.println("Swing stop");
+  //   drive_actuator(SWING_MOTOR, SWING_STOP, 0);
+  // }
 
   // arm
   // zwiekszone limity treshold do +/-50
   if (arm_speed > 50) {
-    Serial.println("Arm in");
+    // Serial.println("Arm in");
     drive_actuator(ARM, ARM_IN, arm_speed);
   }
   else if (arm_speed < -50) {
     // Serial.println("Arm out");
     drive_actuator(ARM, ARM_OUT, arm_speed);
   }
-  else {
-    // Serial.println("Arm stop");
-    drive_actuator(ARM, ARM_STOP, 0);
-  }
+  // else {
+  //   // Serial.println("Arm stop");
+  //   drive_actuator(ARM, ARM_STOP, 0);
+  // }
 
   // dipper
   if (dipper_speed > 50) {
-    Serial.println("Dipper in");
+    // Serial.println("Dipper in");
     drive_actuator(DIPPER, DIPPER_IN, dipper_speed);
   }
   else if (dipper_speed < -50) {
     // Serial.println("Dipper out");
     drive_actuator(DIPPER, DIPPER_OUT, dipper_speed);
   }
-  else {
-    // Serial.println("Dipper stop");
-    drive_actuator(DIPPER, DIPPER_STOP, 0);
-  }
+  // else {
+  //   // Serial.println("Dipper stop");
+  //   drive_actuator(DIPPER, DIPPER_STOP, 0);
+  // }
 
   // bucket
   if (bucket_speed > 50) {
-    Serial.println("Bucket in");
+    // Serial.println("Bucket in");
     drive_actuator(BUCKET, BUCKET_IN, bucket_speed);
   }
   else if (bucket_speed < -50) {
     // Serial.println("Bucket out");
     drive_actuator(BUCKET, BUCKET_OUT, bucket_speed);
   }
-  else {
-    // Serial.println("Bucket stop");
-    drive_actuator(BUCKET, BUCKET_STOP, 0);
-  }
+  // else {
+  //   // Serial.println("Bucket stop");
+  //   drive_actuator(BUCKET, BUCKET_STOP, 0);
+  // }
 
   // thumb
   if (thumb_in_speed > thumb_out_speed + 10) {
-    Serial.println("Thumb in");
-    Serial.print("thumb in speed: ");
-    Serial.println(thumb_in_speed);
+    // Serial.println("Thumb in");
+    // Serial.print("thumb in speed: ");
+    // Serial.println(thumb_in_speed);
     drive_actuator(THUMB, THUMB_IN, thumb_in_speed);
   }
   else if (thumb_in_speed < thumb_out_speed - 10) {
-    Serial.println("Thumb out");
-    Serial.print("thumb out speed: ");
-    Serial.println(thumb_out_speed);
+    // Serial.println("Thumb out");
+    // Serial.print("thumb out speed: ");
+    // Serial.println(thumb_out_speed);
     drive_actuator(THUMB, THUMB_OUT, thumb_out_speed);
   }
-  else {
+  // else {
     // Serial.println("Thumb stop");
-    Serial.print("thumb in speed: ");
-    Serial.print(thumb_in_speed);
-    Serial.print(" thumb out speed: ");
-    Serial.print(thumb_out_speed);
-    Serial.print(" thumb in - thumb out: ");
-    Serial.println(thumb_in_speed - thumb_out_speed);
-    drive_actuator(THUMB, THUMB_STOP, 0);
-  }
+    // Serial.print("thumb in speed: ");
+    // Serial.print(thumb_in_speed);
+    // Serial.print(" thumb out speed: ");
+    // Serial.print(thumb_out_speed);
+    // Serial.print(" thumb in - thumb out: ");
+    // Serial.println(thumb_in_speed - thumb_out_speed);
+    // drive_actuator(THUMB, THUMB_STOP, 0);
+  // }
 
-
-
-
-
-
-  if (ctl->l1()) {
-    // Serial.println("L1");
-  }
-
-  if (ctl->l2()) {
-    // Serial.println("L2");
-  }
-
-  if (ctl->r1()) {
-    // Serial.println("R1");
-  }
-
-  if (ctl->r2()) {
-    // Serial.println("R2");
-  }
   // Another way to query controller data is by getting the buttons() function.
   // See how the different "dump*" functions dump the Controller info.
   // dumpGamepad(ctl);
@@ -360,9 +340,7 @@ void processControllers() {
 }
 
 void drive_motor(uint8_t pinA, uint8_t pinB, int8_t direction, int16_t speed) {
-  // Serial.println("Drive motor");
-  // Serial.print("Speed before conversion: ");
-  // Serial.println(speed);
+  // multiplying *4 because pwm is up to 4096 (12bit) and joystick is up to 512
   if (speed < 0)
   {
     speed = speed * -8;
@@ -374,11 +352,10 @@ void drive_motor(uint8_t pinA, uint8_t pinB, int8_t direction, int16_t speed) {
     // Serial.print("Speed after conversion: ");
     // Serial.println(speed);
   }
-
-  // multiplying *4 because pwm is up to 4096 (12bit) and joystick is up to 512
-  // speed = speed * 4;
-  // Serial.print("Speed * 4:");
-  // Serial.println(speed);
+  Serial.print(">Drive motor speed: ");
+  Serial.println(speed);
+  Serial.print(">Direction: ");
+  Serial.println(direction);
 
   if (direction == 1) {
     // Serial.println("Direction 1");
@@ -392,7 +369,7 @@ void drive_motor(uint8_t pinA, uint8_t pinB, int8_t direction, int16_t speed) {
     pwm.setPWM(pinA, 0, speed);
   }
   else {
-    // Serial.println("Direction 0");
+    Serial.println("Direction 0");
     pwm.setPWM(pinA, 4096, 0);
     pwm.setPWM(pinB, 4096, 0);
   }
@@ -401,42 +378,56 @@ void drive_motor(uint8_t pinA, uint8_t pinB, int8_t direction, int16_t speed) {
   // pwm.setPWM(pin, 0, 4096);       // turns pin fully off
 }
 
-void drive_actuator(Actuators motor, int8_t direction, uint16_t speed) {
+void drive_actuator(Actuators motor, int8_t direction, float speed) {
   // Serial.println("Drive actuator");
   switch (motor)
   {
   case LEFT_DRIVE:
     // Serial.println("LEFT_DRIVE");
+    Serial.print(">Left track: ");
+    Serial.println(speed);
     drive_motor(motor_1_A, motor_1_B, direction, speed);
 
     break;
   case RIGHT_DRIVE:
     // Serial.println("RIGHT_DRIVE");
+    Serial.print(">Right track: ");
+    Serial.println(speed);
     drive_motor(motor_2_A, motor_2_B, direction, speed);
 
     break;
   case SWING_MOTOR:
     // Serial.println("SWING MOTOR");
+    Serial.print(">Swing: ");
+    Serial.println(speed);
     drive_motor(motor_3_A, motor_3_B, direction, speed);
 
     break;
   case ARM:
     // Serial.println("ARM MOTOR");
+    Serial.print(">Arm: ");
+    Serial.println(speed);
     drive_motor(motor_4_A, motor_4_B, direction, speed);
 
     break;
   case DIPPER:
     // Serial.println("DIPPER MOTOR");
+    Serial.print(">Dipper: ");
+    Serial.println(speed);
     drive_motor(motor_5_A, motor_5_B, direction, speed);
 
     break;
   case BUCKET:
     // Serial.println("BUCKET MOTOR");
+    Serial.print(">Bucket: ");
+    Serial.println(speed);
     drive_motor(motor_6_A, motor_6_B, direction, speed);
 
     break;
   case THUMB:
     // Serial.println("THUMB MOTOR");
+    Serial.print(">Thumb: ");
+    Serial.println(speed);
     drive_motor(motor_7_A, motor_7_B, direction, speed);
 
     break;
@@ -501,7 +492,7 @@ void loop() {
   // https://stackoverflow.com/questions/66278271/task-watchdog-got-triggered-the-tasks-did-not-reset-the-watchdog-in-time
 
   //     vTaskDelay(1);
-  delay(5);
+  // delay(5);
 
   // Serial.println("Driving actuators in loop()");
   // drive_actuator(LEFT_DRIVE, 0, 2048);
