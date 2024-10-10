@@ -29,29 +29,29 @@ ControllerPtr myControllers[BP32_MAX_GAMEPADS];
  swing 2       ** aux 2
 */
 
-const uint8_t motor_1_A = 0;
-const uint8_t motor_1_B = 1;
+const uint8_t left_motor_A = 0;
+const uint8_t left_motor_B = 1;
 
-const uint8_t motor_2_A = 2;
+const uint8_t right_motor_A = 2;
 const uint8_t motor_2_B = 3;
 
-const uint8_t motor_3_A = 4;
-const uint8_t motor_3_B = 7;
+const uint8_t swing_motor_A = 4;
+const uint8_t swing_motor_B = 7;
 
-const uint8_t motor_4_A = 5;
-const uint8_t motor_4_B = 6;
+const uint8_t arm_motor_A = 5;
+const uint8_t arm_motor_B = 6;
 
-const uint8_t motor_5_A = 8;
-const uint8_t motor_5_B = 9;
+const uint8_t dipper_motor_A = 8;
+const uint8_t dipper_motor_B = 9;
 
-const uint8_t motor_6_A = 10;
-const uint8_t motor_6_B = 11;
+const uint8_t bucket_motor_A = 10;
+const uint8_t bucket_motor_B = 11;
 
-const uint8_t motor_7_A = 12;
-const uint8_t motor_7_B = 13;
+const uint8_t thumb_motor_A = 12;
+const uint8_t thumb_motor_B = 13;
 
-const uint8_t motor_8_A = 14;
-const uint8_t motor_8_B = 15;
+const uint8_t aux_motor_A = 14;
+const uint8_t aux_motor_B = 15;
 
 // REFACTOR zamiast ARM_OUT=1 i BUCKET_OUT=1 zrobic jedno OUT=1, tak samo z forward i backward
 const bool LEFT_TRACK_FORWARD  = 1;
@@ -195,114 +195,96 @@ void processGamepad(ControllerPtr ctl) {
     bucket_speed = ctl->axisRX();
     swing_speed = ctl->axisX();
   }
+  Serial.print(">Left track: ");
+  Serial.println(left_drive_speed);
+  Serial.print(">Right track: ");
+  Serial.println(right_drive_speed);
+  Serial.print(">Swing: ");
+  Serial.println(swing_speed);
+  Serial.print(">Arm: ");
+  Serial.println(arm_speed);
+  Serial.print(">Dipper: ");
+  Serial.println(dipper_speed);
+  Serial.print(">Bucket: ");
+  Serial.println(bucket_speed);
 
-  // right drive
-  if (right_drive_speed <= -40) {
-    // Serial.println("Driving right track forward");
-    drive_actuator(RIGHT_DRIVE, RIGHT_TRACK_FORWARD, right_drive_speed);
-  }
-  else if (right_drive_speed >= 40) {
-    // Serial.println("Driving right track backward");
-    drive_actuator(RIGHT_DRIVE, RIGHT_TRACK_BACKWARD, right_drive_speed);
-  }
-  // else {
-  //   // Serial.println("Stopping right track");
-  //   drive_actuator(RIGHT_DRIVE, RIGHT_TRACK_STOP, 0);
+  drive_motor(right_motor_A, right_motor_A, right_drive_speed);
+  drive_motor(left_motor_A, left_motor_B, left_drive_speed);
+  drive_motor(swing_motor_A, swing_motor_B, swing_speed);
+  drive_motor(arm_motor_A, arm_motor_B, arm_speed);
+  drive_motor(dipper_motor_A, dipper_motor_B, dipper_speed);
+  drive_motor(bucket_motor_A, bucket_motor_B, bucket_speed);
+  
+
+  // // right drive
+  // if (right_drive_speed <= -40) {
+  //   // drive_actuator(RIGHT_DRIVE, right_drive_speed);
+  //   drive_motor(right_motor_A, right_motor_A, right_drive_speed);
+  // }
+  // else if (right_drive_speed >= 40) {
+  //   // drive_actuator(RIGHT_DRIVE, right_drive_speed);
+  //   drive_motor(right_motor_A, right_motor_A, right_drive_speed);
   // }
 
-  // left drive
-  if (left_drive_speed <= -40) {
-    // Serial.println("Driving left track forward");
-    drive_actuator(LEFT_DRIVE, LEFT_TRACK_FORWARD, left_drive_speed);
-  }
-  else if (left_drive_speed >= 40) {
-    // Serial.println("Driving left track backward");
-    drive_actuator(LEFT_DRIVE, LEFT_TRACK_BACKWARD, left_drive_speed);
-  }
-  // else {
-  //   // Serial.println("Stopping left track");
-  //   drive_actuator(LEFT_DRIVE, LEFT_TRACK_STOP, 0);
+  // // left drive
+  // if (left_drive_speed <= -40) {
+  //   // drive_actuator(LEFT_DRIVE, left_drive_speed);
+  //   drive_motor(left_motor_A, left_motor_B, left_drive_speed);
+  // }
+  // else if (left_drive_speed >= 40) {
+  //   // drive_actuator(LEFT_DRIVE, left_drive_speed);
+  //   drive_motor(left_motor_A, left_motor_B, left_drive_speed);
   // }
 
-  // swing
-  if (swing_speed > 50) {
-    // Serial.println("Swing right");
-    drive_actuator(SWING_MOTOR, SWING_RIGHT, swing_speed);
-  }
-  else if (swing_speed < -50) {
-    // Serial.println("Swing left");
-    drive_actuator(SWING_MOTOR, SWING_LEFT, swing_speed);
-  }
-  // else {
-  //   // Serial.println("Swing stop");
-  //   drive_actuator(SWING_MOTOR, SWING_STOP, 0);
+  // // swing
+  // if (swing_speed > 50) {
+  //   // drive_actuator(SWING_MOTOR, swing_speed);
+  //   drive_motor(swing_motor_A, swing_motor_B, swing_speed);
+  // }
+  // else if (swing_speed < -50) {
+  //   // drive_actuator(SWING_MOTOR, swing_speed);
+  //   drive_motor(swing_motor_A, swing_motor_B, swing_speed);
   // }
 
-  // arm
-  // zwiekszone limity treshold do +/-50
-  if (arm_speed > 50) {
-    // Serial.println("Arm in");
-    drive_actuator(ARM, ARM_IN, arm_speed);
-  }
-  else if (arm_speed < -50) {
-    // Serial.println("Arm out");
-    drive_actuator(ARM, ARM_OUT, arm_speed);
-  }
-  // else {
-  //   // Serial.println("Arm stop");
-  //   drive_actuator(ARM, ARM_STOP, 0);
+  // // arm
+  // // zwiekszone limity treshold do +/-50
+  // if (arm_speed > 50) {
+  //   // drive_actuator(ARM, arm_speed);
+  //   drive_motor(arm_motor_A, arm_motor_B, arm_speed);
+  // }
+  // else if (arm_speed < -50) {
+  //   // drive_actuator(ARM, arm_speed);
+  //   drive_motor(arm_motor_A, arm_motor_B, arm_speed);
   // }
 
-  // dipper
-  if (dipper_speed > 50) {
-    // Serial.println("Dipper in");
-    drive_actuator(DIPPER, DIPPER_IN, dipper_speed);
-  }
-  else if (dipper_speed < -50) {
-    // Serial.println("Dipper out");
-    drive_actuator(DIPPER, DIPPER_OUT, dipper_speed);
-  }
-  // else {
-  //   // Serial.println("Dipper stop");
-  //   drive_actuator(DIPPER, DIPPER_STOP, 0);
+  // // dipper
+  // if (dipper_speed > 50) {
+  //   // drive_actuator(DIPPER, dipper_speed);
+  //   drive_motor(dipper_motor_A, dipper_motor_B, dipper_speed);
+  // }
+  // else if (dipper_speed < -50) {
+  //   // drive_actuator(DIPPER, dipper_speed);
+  //   drive_motor(dipper_motor_A, dipper_motor_B, dipper_speed);
   // }
 
-  // bucket
-  if (bucket_speed > 50) {
-    // Serial.println("Bucket in");
-    drive_actuator(BUCKET, BUCKET_IN, bucket_speed);
-  }
-  else if (bucket_speed < -50) {
-    // Serial.println("Bucket out");
-    drive_actuator(BUCKET, BUCKET_OUT, bucket_speed);
-  }
-  // else {
-  //   // Serial.println("Bucket stop");
-  //   drive_actuator(BUCKET, BUCKET_STOP, 0);
+  // // bucket
+  // if (bucket_speed > 50) {
+  //   // drive_actuator(BUCKET, bucket_speed);
+  //   drive_motor(bucket_motor_A, bucket_motor_B, bucket_speed);
   // }
-
-  // thumb
-  if (thumb_in_speed > thumb_out_speed + 10) {
-    // Serial.println("Thumb in");
-    // Serial.print("thumb in speed: ");
-    // Serial.println(thumb_in_speed);
-    drive_actuator(THUMB, THUMB_IN, thumb_in_speed);
-  }
-  else if (thumb_in_speed < thumb_out_speed - 10) {
-    // Serial.println("Thumb out");
-    // Serial.print("thumb out speed: ");
-    // Serial.println(thumb_out_speed);
-    drive_actuator(THUMB, THUMB_OUT, thumb_out_speed);
-  }
-  // else {
-    // Serial.println("Thumb stop");
-    // Serial.print("thumb in speed: ");
-    // Serial.print(thumb_in_speed);
-    // Serial.print(" thumb out speed: ");
-    // Serial.print(thumb_out_speed);
-    // Serial.print(" thumb in - thumb out: ");
-    // Serial.println(thumb_in_speed - thumb_out_speed);
-    // drive_actuator(THUMB, THUMB_STOP, 0);
+  // else if (bucket_speed < -50) {
+  //   // drive_actuator(BUCKET, bucket_speed);
+  //   drive_motor(bucket_motor_A, bucket_motor_B, bucket_speed);
+  // }
+  
+  // // thumb
+  // if (thumb_in_speed > thumb_out_speed + 10) {
+  //   // drive_actuator(THUMB, thumb_in_speed);
+  //   drive_motor(thumb_motor_A, thumb_motor_B, thumb_in_speed);
+  // }
+  // else if (thumb_in_speed < thumb_out_speed - 10) {
+  //   // drive_actuator(THUMB, thumb_out_speed);
+  //   drive_motor(thumb_motor_A, thumb_motor_B, thumb_out_speed);
   // }
 
   // Another way to query controller data is by getting the buttons() function.
@@ -315,61 +297,53 @@ void processControllers() {
     if (myController && myController->isConnected() && myController->hasData()) {
       if (myController->isGamepad()) {
         processGamepad(myController);
+        Serial.print("NEW DATA******************* ");
+        Serial.println(millis());
       } else {
         Serial.println("Unsupported controller");
       }
-    } else {
-    // tutaj dopisac zabezpieczenie wylaczajace wszystkie silniki kiedy nie ma polaczenia z kontrolerem
-    // LEFT_DRIVE = 1,
-    // RIGHT_DRIVE,
-    // SWING_MOTOR,
-    // ARM,
-    // DIPPER,
-    // BUCKET,
-    // THUMB,
-    // Serial.println("**************************************************");
-    // drive_actuator(LEFT_DRIVE, LEFT_TRACK_STOP, 0);
-    // drive_actuator(RIGHT_DRIVE, RIGHT_TRACK_STOP, 0);
-    // drive_actuator(SWING_MOTOR, SWING_STOP, 0);
-    // drive_actuator(ARM, ARM_STOP, 0);
-    // drive_actuator(DIPPER, DIPPER_STOP, 0);
-    // drive_actuator(BUCKET, BUCKET_STOP, 0);
-    // drive_actuator(THUMB, THUMB_STOP, 0);
     }
   }
 }
 
-void drive_motor(uint8_t pinA, uint8_t pinB, int8_t direction, int16_t speed) {
+void drive_motor(uint8_t pinA, uint8_t pinB, int16_t speed) {
+  // tutaj tez przerobic i wywalic calkowicie direction i okreslac go na podstawie czy speed > 0 czy < 0 (z jakimś marginesem)
   // multiplying *4 because pwm is up to 4096 (12bit) and joystick is up to 512
-  if (speed < 0)
-  {
-    speed = speed * -8;
-    // Serial.print("Speed after conversion: ");
-    // Serial.println(speed);
-  }
-  else {
-    speed = speed * 8;
-    // Serial.print("Speed after conversion: ");
-    // Serial.println(speed);
-  }
-  Serial.print(">Drive motor speed: ");
-  Serial.println(speed);
-  Serial.print(">Direction: ");
-  Serial.println(direction);
+  // if (speed < 0)
+  // {
+  //   speed = speed * -8;
+  //   // Serial.print("Speed after conversion: ");
+  //   // Serial.println(speed);
+  // }
+  // else {
+  //   speed = speed * 8;
+  //   // Serial.print("Speed after conversion: ");
+  //   // Serial.println(speed);
+  // }
+  // Serial.print(">Drive motor speed: ");
+  // Serial.println(speed);
+  // Serial.print(">Direction: ");
+  // Serial.println(direction);
 
-  if (direction == 1) {
+  if (speed <= -511) {
+    speed = -511;
+  }
+
+  if (speed > 80) {
     // Serial.println("Direction 1");
     // Serial.println("PinA set");
+    speed = speed * 8;
     pwm.setPWM(pinA, 0, 4096);
     pwm.setPWM(pinB, 0, speed);
   }
-  else if (direction == -1) {
+  else if (speed < -80) {
     // Serial.println("Direction -1");
+    speed = speed * -8;
     pwm.setPWM(pinB, 0, 4096);
     pwm.setPWM(pinA, 0, speed);
   }
   else {
-    Serial.println("Direction 0");
+    // Serial.println("Direction 0");
     pwm.setPWM(pinA, 4096, 0);
     pwm.setPWM(pinB, 4096, 0);
   }
@@ -378,69 +352,70 @@ void drive_motor(uint8_t pinA, uint8_t pinB, int8_t direction, int16_t speed) {
   // pwm.setPWM(pin, 0, 4096);       // turns pin fully off
 }
 
-void drive_actuator(Actuators motor, int8_t direction, float speed) {
-  // Serial.println("Drive actuator");
-  switch (motor)
-  {
-  case LEFT_DRIVE:
-    // Serial.println("LEFT_DRIVE");
-    Serial.print(">Left track: ");
-    Serial.println(speed);
-    drive_motor(motor_1_A, motor_1_B, direction, speed);
+// void drive_actuator(Actuators motor, int16_t speed) {
+//   // przerobic funkcje i wywalic direction, zostawic speed jako wartosc <-512, 512>
+//   // Serial.println("Drive actuator");
+//   switch (motor)
+//   {
+//   case LEFT_DRIVE:
+//     // Serial.println("LEFT_DRIVE");
+//     Serial.print(">Left track: ");
+//     Serial.println(speed);
+//     drive_motor(left_motor_A, left_motor_B, speed);
 
-    break;
-  case RIGHT_DRIVE:
-    // Serial.println("RIGHT_DRIVE");
-    Serial.print(">Right track: ");
-    Serial.println(speed);
-    drive_motor(motor_2_A, motor_2_B, direction, speed);
+//     break;
+//   case RIGHT_DRIVE:
+//     // Serial.println("RIGHT_DRIVE");
+//     Serial.print(">Right track: ");
+//     Serial.println(speed);
+//     drive_motor(right_motor_A, motor_2_B, speed);
 
-    break;
-  case SWING_MOTOR:
-    // Serial.println("SWING MOTOR");
-    Serial.print(">Swing: ");
-    Serial.println(speed);
-    drive_motor(motor_3_A, motor_3_B, direction, speed);
+//     break;
+//   case SWING_MOTOR:
+//     // Serial.println("SWING MOTOR");
+//     Serial.print(">Swing: ");
+//     Serial.println(speed);
+//     drive_motor(swing_motor_A, swing_motor_B, speed);
 
-    break;
-  case ARM:
-    // Serial.println("ARM MOTOR");
-    Serial.print(">Arm: ");
-    Serial.println(speed);
-    drive_motor(motor_4_A, motor_4_B, direction, speed);
+//     break;
+//   case ARM:
+//     // Serial.println("ARM MOTOR");
+//     Serial.print(">Arm: ");
+//     Serial.println(speed);
+//     drive_motor(arm_motor_A, arm_motor_B, speed);
 
-    break;
-  case DIPPER:
-    // Serial.println("DIPPER MOTOR");
-    Serial.print(">Dipper: ");
-    Serial.println(speed);
-    drive_motor(motor_5_A, motor_5_B, direction, speed);
+//     break;
+//   case DIPPER:
+//     // Serial.println("DIPPER MOTOR");
+//     Serial.print(">Dipper: ");
+//     Serial.println(speed);
+//     drive_motor(dipper_motor_A, dipper_motor_B, speed);
 
-    break;
-  case BUCKET:
-    // Serial.println("BUCKET MOTOR");
-    Serial.print(">Bucket: ");
-    Serial.println(speed);
-    drive_motor(motor_6_A, motor_6_B, direction, speed);
+//     break;
+//   case BUCKET:
+//     // Serial.println("BUCKET MOTOR");
+//     Serial.print(">Bucket: ");
+//     Serial.println(speed);
+//     drive_motor(bucket_motor_A, bucket_motor_B, speed);
 
-    break;
-  case THUMB:
-    // Serial.println("THUMB MOTOR");
-    Serial.print(">Thumb: ");
-    Serial.println(speed);
-    drive_motor(motor_7_A, motor_7_B, direction, speed);
+//     break;
+//   case THUMB:
+//     // Serial.println("THUMB MOTOR");
+//     Serial.print(">Thumb: ");
+//     Serial.println(speed);
+//     drive_motor(thumb_motor_A, thumb_motor_B, speed);
 
-    break;
-  case AUX:
-    // Serial.println("AUX");
-    drive_motor(motor_8_A, motor_8_B, direction, speed);
+//     break;
+//   case AUX:
+//     // Serial.println("AUX");
+//     drive_motor(aux_motor_A, aux_motor_B, speed);
     
-    break;
+//     break;
   
-  default:
-    break;
-  }
-}
+//   default:
+//     break;
+//   }
+// }
 
 /*
 do poprawy:
