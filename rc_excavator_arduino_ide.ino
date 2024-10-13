@@ -20,14 +20,14 @@ ControllerPtr myControllers[BP32_MAX_GAMEPADS];
 
 /*
 Motor connectors pinouts:
- left track 1  ** dipper 1
- left track 2  ** dipper 2
- right track 1 ** bucket 1
- right track 2 ** bucket 2
- arm 1         ** thumb 1
- arm 2         ** thumb 2
- swing 1       ** aux 1
- swing 2       ** aux 2
+ orange left track 1  ** dipper 1 red
+ green left track 2  ** dipper 2 black
+ yellow right track 1 ** bucket 1 yellow
+ brown right track 2 ** bucket 2 white
+ yellow arm 1         ** thumb 1 black
+ white arm 2         ** thumb 2 red
+ yellow swing 1       ** aux 1
+ white swing 2       ** aux 2
 */
 
 const uint8_t left_motor_A = 0;
