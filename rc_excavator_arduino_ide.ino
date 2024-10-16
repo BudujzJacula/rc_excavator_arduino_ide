@@ -4,6 +4,13 @@
 #include "Adafruit_PWMServoDriver.h"
 #include <Bluepad32.h>
 
+/*
+TODO:
+- przemyslec czy dodac jakis input zeby robic forgetBluetoothKeys(),
+- dodac sterowanie thumbem przez l2, r2
+- dodac sterowanie auxem i wybrac do niego przyciski
+*/
+
 enum Actuators {
   LEFT_DRIVE = 1,
   RIGHT_DRIVE,
@@ -20,10 +27,10 @@ ControllerPtr myControllers[BP32_MAX_GAMEPADS];
 
 /*
 Motor connectors pinouts:
- orange left track 1  ** dipper 1 red
- green left track 2  ** dipper 2 black
- yellow right track 1 ** bucket 1 yellow
- brown right track 2 ** bucket 2 white
+ brown left track 1  ** dipper 1 red
+ yellow left track 2  ** dipper 2 black
+ orange right track 1 ** bucket 1 yellow
+ green right track 2 ** bucket 2 white
  yellow arm 1         ** thumb 1 black
  white arm 2         ** thumb 2 red
  yellow swing 1       ** aux 1
@@ -233,13 +240,6 @@ void drive_motor(uint8_t pinA, uint8_t pinB, int16_t speed) {
   // pwm.setPWM(pin, 0, 4096);       // turns pin fully off
 }
 
-/*
-do poprawy:
-- przemyslec czy dodac jakis input zeby robic forgetBluetoothKeys(),
-- dodac sterowanie thumbem przez l2, r2
-- dodac sterowanie auxem i wybrac do niego przyciski
-*/
-
 void check_battery(void){
   uint16_t battery_read = 0;
 
@@ -271,7 +271,6 @@ void check_battery(void){
   // Serial.print(">Battery voltage: ");
   // Serial.println(voltage);
 }
-
 
 // Arduino setup function. Runs in CPU 1
 void setup() {
