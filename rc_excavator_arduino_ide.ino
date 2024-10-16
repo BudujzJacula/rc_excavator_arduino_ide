@@ -34,7 +34,7 @@ const uint8_t left_motor_A = 0;
 const uint8_t left_motor_B = 1;
 
 const uint8_t right_motor_A = 2;
-const uint8_t motor_2_B = 3;
+const uint8_t right_motor_B = 3;
 
 const uint8_t swing_motor_A = 4;
 const uint8_t swing_motor_B = 7;
@@ -59,6 +59,19 @@ const bool THUMB_OUT = 1;
 const bool THUMB_STOP = 0;
 const int THUMB_IN = -1;
 
+const uint8_t BATTERY_INPUT = 34;
+// voltage divider ratio: 32560 / (9777 + 32560) = 32560 / 42337 = 0.769
+// 1/ratio = 1,30
+const float VBAT_DIVIDER_COMP = 1.30F;
+const uint16_t ADC_RES = 1024;
+const float MAX_VOLTAGE = 3.3F;
+const float BATTERY_OFFSET = 6.0F;
+const float USABLE_BATTERY_RANGE = 2.4F;
+const uint8_t ADC_AVERAGE_SAMPLES = 10;
+
+float voltage = 0;
+uint8_t voltage_percent = 0;
+
 int right_joystick_Y = 0;
 int left_joystick_Y = 0;
 int right_drive_speed = 0;
@@ -79,6 +92,9 @@ bool y = false;
 
 bool l1 = false;
 bool r1 = false;
+
+// dopoki check_battery() nie bedzie dzialalo jak powinno to ta flaga jest utrzymywana jako true zeby nie blokowac silnikow
+bool battery_flag = true;
 
 // This callback gets called any time a new gamepad is connected.
 // Up to 4 gamepads can be connected at the same time.
@@ -162,13 +178,21 @@ void processGamepad(ControllerPtr ctl) {
   Serial.println(dipper_speed);
   Serial.print(">Bucket: ");
   Serial.println(bucket_speed);
+  // Serial.print(">Battery voltage: ");
+  // Serial.println(voltage);
+  // Serial.print(">Battery percent: ");
+  // Serial.println(voltage_percent);
+  // Serial.print(">Battery flag: ");
+  // Serial.println(battery_flag);
 
-  drive_motor(right_motor_A, right_motor_A, right_drive_speed);
-  drive_motor(left_motor_A, left_motor_B, left_drive_speed);
-  drive_motor(swing_motor_A, swing_motor_B, swing_speed);
-  drive_motor(arm_motor_A, arm_motor_B, arm_speed);
-  drive_motor(dipper_motor_A, dipper_motor_B, dipper_speed);
-  drive_motor(bucket_motor_A, bucket_motor_B, bucket_speed);
+  if (battery_flag) {
+    drive_motor(right_motor_A, right_motor_B, right_drive_speed);
+    drive_motor(left_motor_A, left_motor_B, left_drive_speed);
+    drive_motor(swing_motor_A, swing_motor_B, swing_speed);
+    drive_motor(arm_motor_A, arm_motor_B, arm_speed);
+    drive_motor(dipper_motor_A, dipper_motor_B, dipper_speed);
+    drive_motor(bucket_motor_A, bucket_motor_B, bucket_speed);
+  }
 }
 
 void processControllers() {
@@ -176,8 +200,6 @@ void processControllers() {
     if (myController && myController->isConnected() && myController->hasData()) {
       if (myController->isGamepad()) {
         processGamepad(myController);
-        Serial.print("NEW DATA******************* ");
-        Serial.println(millis());
       } else {
         Serial.println("Unsupported controller");
       }
@@ -192,7 +214,7 @@ void drive_motor(uint8_t pinA, uint8_t pinB, int16_t speed) {
   }
 
   // multiplying *8 because pwm is up to 4096 and joystick is up to 512
-  if (speed > 80) {    
+  if (speed > 80) {
     speed = speed * 8;
     pwm.setPWM(pinA, 0, 4096);
     pwm.setPWM(pinB, 0, speed);
@@ -218,12 +240,48 @@ do poprawy:
 - dodac sterowanie auxem i wybrac do niego przyciski
 */
 
+void check_battery(void){
+  uint16_t battery_read = 0;
+
+  for (uint8_t i = 0; i < ADC_AVERAGE_SAMPLES; i++) {
+    uint16_t battery_sample = analogRead(BATTERY_INPUT);
+    battery_read = battery_read + battery_sample;
+  }
+
+  battery_read = battery_read / ADC_AVERAGE_SAMPLES;
+  Serial.print(">Battery read: ");
+  Serial.println(battery_read);
+  voltage = battery_read * (MAX_VOLTAGE / ADC_RES);
+  Serial.print(">Battery voltage1: ");
+  Serial.println(voltage);
+  voltage = voltage * VBAT_DIVIDER_COMP;
+  Serial.print(">Battery voltage2: ");
+  Serial.println(voltage);
+  voltage_percent = (((voltage - BATTERY_OFFSET) / USABLE_BATTERY_RANGE) * 100);
+  Serial.print(">Battery percent: ");
+  Serial.println(voltage_percent);
+
+  // if (voltage > 6.0) {
+  //   battery_flag = true;
+  // }
+  // else {
+  //   battery_flag = false;
+  // }
+
+  // Serial.print(">Battery voltage: ");
+  // Serial.println(voltage);
+}
+
+
 // Arduino setup function. Runs in CPU 1
 void setup() {
   Serial.begin(115200);
 
   pwm.begin();
   pwm.setPWMFreq(50);
+
+  analogReadResolution(10);
+  analogSetClockDiv(255);
 
   Serial.printf("Firmware: %s\n", BP32.firmwareVersion());
   const uint8_t* addr = BP32.localBdAddress();
@@ -253,4 +311,9 @@ void loop() {
   bool dataUpdated = BP32.update();
   if (dataUpdated)
     processControllers();
+
+  check_battery();
+
+  // Serial.print("Battery read: ");
+  // Serial.println(analogRead(BATTERY_INPUT));
 }
