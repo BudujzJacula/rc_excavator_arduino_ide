@@ -282,6 +282,7 @@ void setup() {
 
   analogReadResolution(10);
   analogSetClockDiv(255);
+  analogSetAttenuation(ADC_11db);
 
   Serial.printf("Firmware: %s\n", BP32.firmwareVersion());
   const uint8_t* addr = BP32.localBdAddress();
