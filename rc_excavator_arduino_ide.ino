@@ -89,6 +89,7 @@ int bucket_speed = 0;
 int dipper_speed = 0;
 int swing_speed = 0;
 
+int thumb_speed = 0;
 int thumb_in_speed = 0;
 int thumb_out_speed = 0;
 
@@ -149,6 +150,7 @@ void processGamepad(ControllerPtr ctl) {
 
   thumb_in_speed = ctl->throttle();
   thumb_out_speed = ctl->brake();
+  thumb_speed = (thumb_in_speed - thumb_out_speed) / 2;
 
   // jesli r1 wcisniety to analogi steruja gasienicami
   // jesli r1 nie wcisniety to analogi steruja ramieniem i obrotem koparki wg standardu ISO
@@ -185,6 +187,8 @@ void processGamepad(ControllerPtr ctl) {
   Serial.println(dipper_speed);
   Serial.print(">Bucket: ");
   Serial.println(bucket_speed);
+  Serial.print(">Thumb: ");
+  Serial.println(thumb_speed);
   // Serial.print(">Battery voltage: ");
   // Serial.println(voltage);
   // Serial.print(">Battery percent: ");
@@ -199,6 +203,7 @@ void processGamepad(ControllerPtr ctl) {
     drive_motor(arm_motor_A, arm_motor_B, arm_speed);
     drive_motor(dipper_motor_A, dipper_motor_B, dipper_speed);
     drive_motor(bucket_motor_A, bucket_motor_B, bucket_speed);
+    drive_motor(thumb_motor_A, thumb_motor_B, thumb_speed);
   }
 }
 
