@@ -79,19 +79,19 @@ const uint8_t ADC_AVERAGE_SAMPLES = 10;
 float voltage = 0;
 uint8_t voltage_percent = 0;
 
-int right_joystick_Y = 0;
-int left_joystick_Y = 0;
-int right_drive_speed = 0;
-int left_drive_speed = 0;
+int16_t right_joystick_Y = 0;
+int16_t left_joystick_Y = 0;
+int16_t right_drive_speed = 0;
+int16_t left_drive_speed = 0;
 
-int arm_speed = 0;
-int bucket_speed = 0;
-int dipper_speed = 0;
-int swing_speed = 0;
+int16_t arm_speed = 0;
+int16_t bucket_speed = 0;
+int16_t dipper_speed = 0;
+int16_t swing_speed = 0;
 
-int thumb_speed = 0;
-int thumb_in_speed = 0;
-int thumb_out_speed = 0;
+int16_t thumb_speed = 0;
+int16_t thumb_in_speed = 0;
+int16_t thumb_out_speed = 0;
 
 bool a = false;
 bool b = false;
@@ -197,13 +197,13 @@ void processGamepad(ControllerPtr ctl) {
   // Serial.println(battery_flag);
 
   if (battery_flag) {
-    drive_motor(right_motor_A, right_motor_B, right_drive_speed);
-    drive_motor(left_motor_A, left_motor_B, left_drive_speed);
-    drive_motor(swing_motor_A, swing_motor_B, swing_speed);
-    drive_motor(arm_motor_A, arm_motor_B, arm_speed);
-    drive_motor(dipper_motor_A, dipper_motor_B, dipper_speed);
-    drive_motor(bucket_motor_A, bucket_motor_B, bucket_speed);
-    drive_motor(thumb_motor_A, thumb_motor_B, thumb_speed);
+    drive_motor(right_motor_A, right_motor_B, right_drive_speed, -80, 80);
+    drive_motor(left_motor_A, left_motor_B, left_drive_speed, -80, 80);
+    drive_motor(swing_motor_A, swing_motor_B, swing_speed, -80, 80);
+    drive_motor(arm_motor_A, arm_motor_B, arm_speed, -80, 80);
+    drive_motor(dipper_motor_A, dipper_motor_B, dipper_speed, -80, 80);
+    drive_motor(bucket_motor_A, bucket_motor_B, bucket_speed, -80, 80);
+    drive_motor(thumb_motor_A, thumb_motor_B, thumb_speed, -0, 0);
   }
 }
 
@@ -219,19 +219,19 @@ void processControllers() {
   }
 }
 
-void drive_motor(uint8_t pinA, uint8_t pinB, int16_t speed) {
+void drive_motor(uint8_t pinA, uint8_t pinB, int16_t speed, int8_t n_threshold, int8_t p_threshold) {
   // clamping to -511 to prevent overflow and motor stop
   if (speed <= -511) {
     speed = -511;
   }
 
   // multiplying *8 because pwm is up to 4096 and joystick is up to 512
-  if (speed > 80) {
+  if (speed > p_threshold) {
     speed = speed * 8;
     pwm.setPWM(pinA, 0, 4096);
     pwm.setPWM(pinB, 0, speed);
   }
-  else if (speed < -80) {
+  else if (speed < n_threshold) {
     speed = speed * -8;
     pwm.setPWM(pinB, 0, 4096);
     pwm.setPWM(pinA, 0, speed);
