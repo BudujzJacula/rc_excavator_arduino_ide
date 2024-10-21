@@ -37,17 +37,17 @@ Motor connectors pinouts:
  white swing 2       ** aux 2
 */
 
-const uint8_t left_motor_A = 0;
-const uint8_t left_motor_B = 1;
+const uint8_t left_motor_A   = 0;
+const uint8_t left_motor_B   = 1;
 
-const uint8_t right_motor_A = 2;
-const uint8_t right_motor_B = 3;
+const uint8_t right_motor_A  = 2;
+const uint8_t right_motor_B  = 3;
 
-const uint8_t swing_motor_A = 4;
-const uint8_t swing_motor_B = 7;
+const uint8_t swing_motor_A  = 4;
+const uint8_t swing_motor_B  = 7;
 
-const uint8_t arm_motor_A = 5;
-const uint8_t arm_motor_B = 6;
+const uint8_t arm_motor_A    = 5;
+const uint8_t arm_motor_B    = 6;
 
 const uint8_t dipper_motor_A = 8;
 const uint8_t dipper_motor_B = 9;
@@ -55,42 +55,36 @@ const uint8_t dipper_motor_B = 9;
 const uint8_t bucket_motor_A = 10;
 const uint8_t bucket_motor_B = 11;
 
-const uint8_t thumb_motor_A = 12;
-const uint8_t thumb_motor_B = 13;
+const uint8_t thumb_motor_A  = 12;
+const uint8_t thumb_motor_B  = 13;
 
-const uint8_t aux_motor_A = 14;
-const uint8_t aux_motor_B = 15;
+const uint8_t aux_motor_A    = 14;
+const uint8_t aux_motor_B    = 15;
 
-// REFACTOR zamiast ARM_OUT=1 i BUCKET_OUT=1 zrobic jedno OUT=1, tak samo z forward i backward
-const bool THUMB_OUT = 1;
-const bool THUMB_STOP = 0;
-const int THUMB_IN = -1;
-
-const uint8_t BATTERY_INPUT = 34;
+const uint8_t BATTERY_INPUT       = 34;
 // voltage divider ratio: 32560 / (9777 + 32560) = 32560 / 42337 = 0.769
 // 1/ratio = 1,30
-const float VBAT_DIVIDER_COMP = 1.30F;
-const uint16_t ADC_RES = 1024;
-const float MAX_VOLTAGE = 3.3F;
-const float BATTERY_OFFSET = 6.0F;
-const float USABLE_BATTERY_RANGE = 2.4F;
+const float VBAT_DIVIDER_COMP     = 1.30F;
+const uint16_t ADC_RES            = 1024;
+const float MAX_VOLTAGE           = 3.3F;
+const float BATTERY_OFFSET        = 6.0F;
+const float USABLE_BATTERY_RANGE  = 2.4F;
 const uint8_t ADC_AVERAGE_SAMPLES = 10;
+float voltage                     = 0;
+uint8_t voltage_percent           = 0;
 
-float voltage = 0;
-uint8_t voltage_percent = 0;
-
-int16_t right_joystick_Y = 0;
-int16_t left_joystick_Y = 0;
+int16_t right_joystick_Y  = 0;
+int16_t left_joystick_Y   = 0;
 int16_t right_drive_speed = 0;
-int16_t left_drive_speed = 0;
+int16_t left_drive_speed  = 0;
 
-int16_t arm_speed = 0;
+int16_t arm_speed    = 0;
 int16_t bucket_speed = 0;
 int16_t dipper_speed = 0;
-int16_t swing_speed = 0;
+int16_t swing_speed  = 0;
 
-int16_t thumb_speed = 0;
-int16_t thumb_in_speed = 0;
+int16_t thumb_speed     = 0;
+int16_t thumb_in_speed  = 0;
 int16_t thumb_out_speed = 0;
 
 bool a = false;
@@ -111,8 +105,6 @@ void onConnectedController(ControllerPtr ctl) {
   for (int i = 0; i < BP32_MAX_GAMEPADS; i++) {
     if (myControllers[i] == nullptr) {
       Serial.printf("CALLBACK: Controller is connected, index=%d\n", i);
-      // Additionally, you can get certain gamepad properties like:
-      // Model, VID, PID, BTAddr, flags, etc.
       ControllerProperties properties = ctl->getProperties();
       Serial.printf("Controller model: %s, VID=0x%04x, PID=0x%04x\n", ctl->getModelName().c_str(), properties.vendor_id,
                       properties.product_id);
@@ -318,7 +310,4 @@ void loop() {
     processControllers();
 
   check_battery();
-
-  // Serial.print("Battery read: ");
-  // Serial.println(analogRead(BATTERY_INPUT));
 }
